@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>御題帳 - モチーフ生成</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Yuji+Syuku&family=Zen+Kaku+Gothic+New:wght@400;500;700&family=Shippori+Mincho:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #E8DFC8;
+    --paper-card: #F4EFDF;
+    --ink: #211C17;
+    --ink-soft: #5A5145;
+    --ink-faint: #8A806E;
+    --seal: #A6332E;
+    --seal-dark: #7E2521;
+    --line: #C9BD9E;
+    --gold: #8C7A4E;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Zen Kaku Gothic New', sans-serif;
+    min-height: 100%;
+  }
+  body {
+    background-image:
+      radial-gradient(circle at 20% 10%, rgba(140,122,78,0.07), transparent 40%),
+      radial-gradient(circle at 90% 80%, rgba(140,122,78,0.06), transparent 45%);
+  }
+  .wrap { max-width: 560px; margin: 0 auto; padding: 18px 16px 100px; }
+
+  header.title { text-align: center; padding: 22px 0 14px; }
+  header.title h1 {
+    font-family: 'Yuji Syuku', serif;
+    font-size: 34px;
+    margin: 0;
+    color: var(--ink);
+    letter-spacing: 0.08em;
+  }
+  header.title p {
+    margin: 6px 0 0;
+    font-size: 12.5px;
+    color: var(--ink-faint);
+    letter-spacing: 0.05em;
+  }
+  header.title .rule {
+    width: 56px; height: 2px; background: var(--gold);
+    margin: 12px auto 0; opacity: 0.6;
+  }
+
+  .panel {
+    background: var(--paper-card);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    margin-bottom: 14px;
+    overflow: hidden;
+  }
+  .panel-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 13px 14px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .panel-head .label {
+    font-family: 'Shippori Mincho', serif;
+    font-weight: 700;
+    font-size: 15px;
+  }
+  .panel-head .chev {
+    font-size: 12px; color: var(--ink-faint);
+    transition: transform 0.25s ease;
+  }
+  .panel.open .chev { transform: rotate(180deg); }
+  .panel-body {
+    display: none;
+    padding: 2px 14px 16px;
+    border-top: 1px solid var(--line);
+  }
+  .panel.open .panel-body { display: block; }
+
+  .subhead-row {
+    display: flex; align-items: center; justify-content: space-between;
+    margin: 14px 0 8px;
+  }
+  .subhead {
+    font-size: 11.5px; color: var(--ink-faint);
+    letter-spacing: 0.04em;
+  }
+  .selectall-row { display: flex; gap: 6px; }
+  .selectall-row button {
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 14px;
+    border: 1px solid var(--line);
+    background: transparent;
+    color: var(--ink-faint);
+  }
+
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip {
+    padding: 7px 13px;
+    border-radius: 20px;
+    border: 1.3px solid var(--line);
+    background: transparent;
+    font-size: 13px;
+    color: var(--ink-soft);
+    font-family: 'Zen Kaku Gothic New', sans-serif;
+  }
+  .chip.on {
+    background: var(--ink);
+    color: var(--paper-card);
+    border-color: var(--ink);
+  }
+
+  .count-row { display: flex; gap: 8px; }
+  .count-btn {
+    flex: 1;
+    padding: 10px 0;
+    text-align: center;
+    border-radius: 4px;
+    border: 1.3px solid var(--line);
+    background: transparent;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--ink-soft);
+  }
+  .count-btn.on {
+    background: var(--seal);
+    color: #F4EFDF;
+    border-color: var(--seal);
+  }
+
+  .tmpl-list { display: flex; flex-direction: column; gap: 8px; }
+  .tmpl-item {
+    display: flex; align-items: flex-start; gap: 8px;
+    padding: 9px 10px;
+    border-radius: 4px;
+    border: 1.3px solid var(--line);
+    font-size: 12.5px;
+    line-height: 1.55;
+  }
+  .tmpl-item.on {
+    border-color: var(--seal);
+    background: rgba(166,51,46,0.06);
+  }
+  .tmpl-item .txt { flex: 1; color: var(--ink-soft); word-break: break-word; }
+  .tmpl-item .del {
+    color: var(--ink-faint); font-size: 15px; padding: 0 2px; flex-shrink: 0;
+  }
+  .tmpl-add { margin-top: 8px; }
+  .tmpl-add textarea {
+    width: 100%;
+    font-family: 'Zen Kaku Gothic New', sans-serif;
+    font-size: 12.5px;
+    padding: 9px 10px;
+    border-radius: 4px;
+    border: 1.3px solid var(--line);
+    background: #fff;
+    resize: vertical;
+    min-height: 54px;
+    color: var(--ink);
+  }
+  .tmpl-hint { font-size: 11px; color: var(--ink-faint); margin: 5px 0 8px; }
+  .tmpl-add-btn {
+    font-size: 12.5px;
+    padding: 8px 14px;
+    border-radius: 20px;
+    border: 1.3px solid var(--ink);
+    background: transparent;
+    color: var(--ink);
+  }
+
+  .stamp-zone {
+    display: flex; justify-content: center; align-items: center;
+    padding: 22px 0 8px;
+  }
+  .stamp {
+    width: 108px; height: 108px;
+    border-radius: 50%;
+    background: var(--seal);
+    color: #F4EFDF;
+    border: none;
+    font-family: 'Yuji Syuku', serif;
+    font-size: 20px;
+    letter-spacing: 0.1em;
+    box-shadow: 0 3px 0 var(--seal-dark), 0 6px 14px rgba(0,0,0,0.25);
+    position: relative;
+    transform: translateY(0);
+    transition: transform 0.08s ease, box-shadow 0.08s ease;
+  }
+  .stamp:active {
+    transform: translateY(3px);
+    box-shadow: 0 0 0 var(--seal-dark), 0 2px 6px rgba(0,0,0,0.2);
+  }
+  .stamp::before {
+    content: '';
+    position: absolute; inset: -8px;
+    border: 1.5px solid var(--seal);
+    border-radius: 50%;
+    opacity: 0.5;
+  }
+  .stamp.thump { animation: thump 0.35s ease; }
+  @keyframes thump {
+    0% { transform: scale(1); }
+    35% { transform: scale(0.9); }
+    60% { transform: scale(1.06); }
+    100% { transform: scale(1); }
+  }
+
+  .reroll-row {
+    display: flex; justify-content: center; gap: 10px;
+    margin-bottom: 18px;
+  }
+  .reroll-row button {
+    font-size: 12.5px;
+    padding: 8px 16px;
+    border-radius: 20px;
+    border: 1.3px solid var(--ink);
+    background: transparent;
+    color: var(--ink);
+  }
+  .reroll-row button:disabled { opacity: 0.35; }
+
+  .results { display: flex; flex-direction: column; gap: 10px; }
+  .card {
+    background: var(--paper-card);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 12px 13px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+  .card .num {
+    font-family: 'Yuji Syuku', serif;
+    font-size: 12px;
+    color: var(--gold);
+    position: absolute;
+    top: 10px; right: 12px;
+  }
+  .card .motifs {
+    font-family: 'Shippori Mincho', serif;
+    font-weight: 700;
+    font-size: 16.5px;
+    color: var(--ink);
+    line-height: 1.4;
+    padding-right: 10px;
+  }
+  .card .copybtn {
+    flex-shrink: 0;
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 12px;
+    padding: 7px 13px;
+    border-radius: 20px;
+    border: 1.3px solid var(--ink-faint);
+    background: transparent;
+    color: var(--ink-soft);
+  }
+  .card .copybtn.copied {
+    border-color: var(--seal);
+    color: var(--seal);
+  }
+
+  .empty {
+    text-align: center;
+    padding: 30px 10px;
+    color: var(--ink-faint);
+    font-size: 13px;
+    line-height: 1.8;
+  }
+
+  .footer-actions { display: flex; justify-content: center; margin-top: 16px; }
+  .footer-actions button {
+    font-size: 12.5px;
+    padding: 9px 18px;
+    border-radius: 20px;
+    border: none;
+    background: var(--ink);
+    color: var(--paper-card);
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="title">
+    <h1>御題帳</h1>
+    <p>妖怪モチーフ お題ガチャ</p>
+    <div class="rule"></div>
+  </header>
+
+  <div class="panel open" id="panel-genre">
+    <div class="panel-head" onclick="togglePanel('panel-genre')">
+      <span class="label">お題の種類</span>
+      <span class="chev">▾</span>
+    </div>
+    <div class="panel-body">
+      <div class="subhead-row">
+        <div class="subhead">ジャンル(複数選択可)</div>
+        <div class="selectall-row">
+          <button onclick="selectAllGenres()">全選択</button>
+          <button onclick="deselectAllGenres()">全解除</button>
+        </div>
+      </div>
+      <div class="chips" id="genreChips"></div>
+
+      <div class="subhead">モチーフの個数</div>
+      <div class="count-row" id="countRow"></div>
+    </div>
+  </div>
+
+  <div class="panel" id="panel-tmpl">
+    <div class="panel-head" onclick="togglePanel('panel-tmpl')">
+      <span class="label">後半の文言</span>
+      <span class="chev">▾</span>
+    </div>
+    <div class="panel-body">
+      <div class="subhead">使う文言を選ぶ(タップで切替・×で削除)</div>
+      <div class="tmpl-list" id="tmplList"></div>
+      <div class="tmpl-add">
+        <div class="tmpl-hint">{motifs} の部分にモチーフが入ります</div>
+        <textarea id="newTmpl" placeholder="例）{motifs}を融合した妖怪描いて。"></textarea>
+        <div style="margin-top:8px;"><button class="tmpl-add-btn" onclick="addTemplate()">+ 追加</button></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="stamp-zone">
+    <button class="stamp" id="stampBtn" onclick="generate()">御題を引く</button>
+  </div>
+  <div class="reroll-row">
+    <button id="rerollBtn" onclick="generate()" disabled>次の10件を引く</button>
+  </div>
+
+  <div class="results" id="results">
+    <div class="empty" id="emptyMsg">ハンコを押すと、10件のお題が出てきます。</div>
+  </div>
+
+  <div class="footer-actions" id="copyAllRow" style="display:none;">
+    <button onclick="copyAll()">10件まとめてコピー</button>
+  </div>
+
+</div>
+
+<script>
+const GENRES = {
+  ent: {
+    label: 'エンタメ',
+    items: ['チェリー','ロビンソン','粉雪','さくら','TSUNAMI','Lemon','白日','正解','ドライフラワー','KING','Pretender','香水','猫(曲)','怪物','群青','YELL','うっせぇわ','夜に駆ける','Idol','ダイナマイト','マリーゴールド','紅蓮華',
+      'ゴッドファーザー','ジョーズ','E.T.','七人の侍','羅生門','となりのトトロ','千と千尋の神隠し','AKIRA','パルプフィクション','マトリックス','タイタニック','ジュラシックパーク','君の名は','もののけ姫','ゴジラ','時計じかけのオレンジ',
+      '吾輩は猫である','坊っちゃん','人間失格','こころ','走れメロス','銀河鉄道の夜','雪国','ノルウェイの森','1Q84','変身','罪と罰','指輪物語','星の王子さま','赤毛のアン','シャーロック・ホームズ',
+      'ドラゴンボール','ワンピース','鬼滅の刃','進撃の巨人','スラムダンク','NARUTO','名探偵コナン','るろうに剣心','幽遊白書','DEATH NOTE','宝石の国','ドラえもん','こち亀',
+      '新世紀エヴァンゲリオン','カウボーイビバップ','ポケットモンスター','美少女戦士セーラームーン','機動戦士ガンダム','鋼の錬金術師','涼宮ハルヒの憂鬱',
+      '半沢直樹','あまちゃん','逃げるは恥だが役に立つ','相棒','家政婦のミタ','北の国から',
+      'スーパーマリオブラザーズ','ゼルダの伝説','ドラゴンクエスト','ファイナルファンタジー','ぷよぷよ','モンスターハンター','あつまれどうぶつの森',
+      '明石家さんま','タモリ','ビートたけし','ダウンタウン','爆笑問題','サンドウィッチマン',
+      '嵐','SMAP','AKB48','乃木坂46','Perfume','YOASOBI','Mrs. GREEN APPLE','King Gnu','RADWIMPS','サザンオールスターズ','あいみょん']
+  },
+  history: {
+    label: '歴史',
+    items: ['織田信長','豊臣秀吉','徳川家康','坂本龍馬','聖徳太子','卑弥呼','源義経','平清盛','紫式部','清少納言','宮本武蔵','勝海舟','西郷隆盛','伊達政宗','上杉謙信','武田信玄','クレオパトラ','ナポレオン','アインシュタイン','ダーウィン','レオナルド・ダ・ヴィンチ','ニュートン','ガリレオ','シェイクスピア','モーツァルト','ベートーヴェン','ゴッホ','ピカソ','ジャンヌ・ダルク','始皇帝',
+      '大化の改新','応仁の乱','関ヶ原の戦い','黒船来航','明治維新','廃藩置県','日露戦争','関東大震災','東京オリンピック1964','高度経済成長','バブル崩壊','阪神淡路大震災','リーマンショック','フランス革命','産業革命','ルネサンス','大航海時代','ベルリンの壁崩壊']
+  },
+  proverb: {
+    label: 'ことわざ・四字熟語',
+    items: ['猿も木から落ちる','石の上にも三年','七転び八起き','灯台下暗し','井の中の蛙','鶴の一声','猫に小判','馬の耳に念仏','雨降って地固まる','一石二鳥','温故知新','五里霧中','電光石火','一期一会','油断大敵','有言実行','切磋琢磨','四面楚歌','順風満帆','大器晩成','日進月歩','弱肉強食','諸行無常','花鳥風月','起死回生','因果応報','千載一遇','孤軍奮闘','臥薪嘗胆','捲土重来','朝令暮改','優柔不断','破天荒']
+  },
+  place: {
+    label: '地名',
+    items: ['京都','浅草','渋谷','パリ','ニューヨーク','ローマ','ヴェネツィア','バルセロナ','カイロ','マチュピチュ','グランドキャニオン','万里の長城','タージ・マハル','アンコールワット','モン・サン・ミッシェル','サグラダ・ファミリア','シドニー','ロンドン','ベルリン','モスクワ','ドバイ','バンコク','香港','台北','上海','ハワイ','バリ島','モルディブ','サンタ・モニカ','ラスベガス','金沢','鎌倉','日光','屋久島','白川郷']
+  },
+  job: {
+    label: '職業',
+    items: ['医者','弁護士','消防士','警察官','パイロット','寿司職人','庭師','大工','漁師','農家','教師','僧侶','力士','忍者','侍','船長','宇宙飛行士','探偵','画家','彫刻家','時計職人','鍛冶屋','仕立て屋','パン職人','DJ','指揮者','天文学者','考古学者','通訳','翻訳家','占い師','魔法使い']
+  },
+  food: {
+    label: '食べ物・料理',
+    items: ['寿司','天ぷら','ラーメン','うどん','お好み焼き','たこ焼き','餃子','麻婆豆腐','カレーライス','おにぎり','味噌汁','納豆','餅','団子','たい焼き','かき氷','パフェ','モンブラン','ティラミス','マカロン','ピザ','パスタ','ハンバーガー','フライドチキン','寿司ロール','キムチ','フォー','タコス','ナン','フォンデュ']
+  },
+  animal: {
+    label: '動物',
+    items: ['猫','犬','狐','狸','蛇','亀','鶴','蛙','カブトムシ','蝶','フクロウ','コウモリ','クジラ','イルカ','タコ','イカ','カニ','エビ','ハリネズミ','パンダ','ラクダ','キリン','ゾウ','サイ','シマウマ','コアラ','カンガルー','ペンギン','フラミンゴ','クラゲ','ナマケモノ','アルマジロ']
+  },
+  tool: {
+    label: '道具・日用品',
+    items: ['傘','扇子','そろばん','印鑑','万年筆','鋏','急須','火鉢','行灯','手鏡','櫛','下駄','風呂敷','蚊帳','電卓','ミシン','金槌','鋸','レンチ','懐中時計','蓄音機','タイプライター','羅針盤','望遠鏡','顕微鏡','栓抜き','じょうろ','はしご','火吹き棒']
+  },
+  vehicle: {
+    label: '乗り物',
+    items: ['人力車','自転車','路面電車','新幹線','蒸気機関車','飛行船','熱気球','ヨット','潜水艦','モノレール','リヤカー','馬車','ロケット','グライダー','ケーブルカー','トロッコ','キャンピングカー','ゴーカート','SL機関車','フェリー','水上飛行機','そり','リフトゴンドラ','屋形船']
+  },
+  myth: {
+    label: '神話・伝説上の存在',
+    items: ['ドラゴン','ユニコーン','フェニックス','ケンタウロス','人魚','ゴーレム','吸血鬼','狼男','ゼウス','オーディン','メデューサ','ミノタウロス','スフィンクス','キマイラ','ペガサス','妖精','ノーム','トロール','バンシー','キューピッド','雷神','風神','七福神','龍王','鳳凰','白虎','朱雀','玄武','麒麟']
+  },
+  weather: {
+    label: '天気・自然現象',
+    items: ['雷','霧','虹','陽炎','竜巻','吹雪','台風','逃げ水','蜃気楼','朝焼け','夕焼け','オーロラ','雪崩','日食','月食','流れ星','霜柱','つらら','天の川','彩雲','環水平アーク','砂嵐','黄砂','梅雨','木枯らし','春一番','花曇り','狐の嫁入り']
+  },
+  sport: {
+    label: 'スポーツ',
+    items: ['相撲','柔道','剣道','弓道','野球','サッカー','バスケットボール','バレーボール','卓球','テニス','水泳','体操','フィギュアスケート','スキー','スノーボード','ボクシング','レスリング','ラグビー','ゴルフ','馬術','フェンシング','アーチェリー','カーリング','綱引き','騎馬戦','玉入れ','駅伝']
+  },
+  brand: {
+    label: '企業・ブランド名',
+    items: ['任天堂','ソニー','トヨタ','パナソニック','無印良品','ユニクロ','ポカリスエット','キューピー','カルビー','ロッテ','明治','江崎グリコ','資生堂','コクヨ','シャチハタ','ヤクルト','ブリヂストン','キッコーマン','カゴメ','サントリー']
+  }
+};
+
+const KANJI_NUM = ['壱','弐','参','四','伍','六','七','八','九','拾'];
+
+const DEFAULT_TEMPLATES = [
+  '{motifs}を融合したヒト型の奇抜な妖怪描いて。モチーフの特徴を爆発的に誇張させ、モチーフそのものは描かないこと。',
+  '{motifs}を融合した妖怪描いて。'
+];
+
+let state = {
+  genres: Object.keys(GENRES),
+  count: 2,
+  templates: DEFAULT_TEMPLATES.slice(),
+  activeTmpl: 0
+};
+let usedCombos = new Set();
+let results = [];
+
+const STORAGE_KEY = 'odaicho-state-v2';
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const saved = JSON.parse(raw);
+      state = Object.assign(state, saved);
+      state.genres = state.genres.filter(g => GENRES[g]);
+      if (state.genres.length === 0) state.genres = Object.keys(GENRES);
+    }
+  } catch (e) {}
+}
+function saveState() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  } catch (e) {
+    console.error('保存に失敗しました', e);
+  }
+}
+
+function togglePanel(id) {
+  document.getElementById(id).classList.toggle('open');
+}
+
+function renderGenreChips() {
+  const el = document.getElementById('genreChips');
+  el.innerHTML = '';
+  Object.keys(GENRES).forEach(key => {
+    const btn = document.createElement('button');
+    btn.className = 'chip' + (state.genres.includes(key) ? ' on' : '');
+    btn.textContent = GENRES[key].label;
+    btn.onclick = () => {
+      if (state.genres.includes(key)) {
+        if (state.genres.length === 1) return;
+        state.genres = state.genres.filter(g => g !== key);
+      } else {
+        state.genres.push(key);
+      }
+      renderGenreChips();
+      saveState();
+    };
+    el.appendChild(btn);
+  });
+}
+
+function selectAllGenres() {
+  state.genres = Object.keys(GENRES);
+  renderGenreChips();
+  saveState();
+}
+function deselectAllGenres() {
+  state.genres = [Object.keys(GENRES)[0]];
+  renderGenreChips();
+  saveState();
+}
+
+function renderCountRow() {
+  const el = document.getElementById('countRow');
+  el.innerHTML = '';
+  [1,2,3].forEach(n => {
+    const btn = document.createElement('button');
+    btn.className = 'count-btn' + (state.count === n ? ' on' : '');
+    btn.textContent = n;
+    btn.onclick = () => {
+      state.count = n;
+      renderCountRow();
+      saveState();
+    };
+    el.appendChild(btn);
+  });
+}
+
+function renderTemplates() {
+  const el = document.getElementById('tmplList');
+  el.innerHTML = '';
+  state.templates.forEach((t, i) => {
+    const row = document.createElement('div');
+    row.className = 'tmpl-item' + (state.activeTmpl === i ? ' on' : '');
+    const txt = document.createElement('div');
+    txt.className = 'txt';
+    txt.textContent = t;
+    txt.onclick = () => { state.activeTmpl = i; renderTemplates(); saveState(); };
+    row.appendChild(txt);
+    if (state.templates.length > 1) {
+      const del = document.createElement('div');
+      del.className = 'del';
+      del.textContent = '×';
+      del.onclick = (ev) => {
+        ev.stopPropagation();
+        state.templates.splice(i, 1);
+        if (state.activeTmpl >= state.templates.length) state.activeTmpl = state.templates.length - 1;
+        renderTemplates();
+        saveState();
+      };
+      row.appendChild(del);
+    }
+    el.appendChild(row);
+  });
+}
+
+function addTemplate() {
+  const ta = document.getElementById('newTmpl');
+  const val = ta.value.trim();
+  if (!val) return;
+  const withPlaceholder = val.includes('{motifs}') ? val : ('{motifs}' + val);
+  state.templates.push(withPlaceholder);
+  state.activeTmpl = state.templates.length - 1;
+  ta.value = '';
+  renderTemplates();
+  saveState();
+}
+
+function shuffled(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function buildPool() {
+  let pool = [];
+  state.genres.forEach(key => {
+    if (GENRES[key]) pool = pool.concat(GENRES[key].items);
+  });
+  return pool;
+}
+
+function pickCombo(pool) {
+  const shuffledPool = shuffled(pool);
+  return shuffledPool.slice(0, state.count);
+}
+
+function generate() {
+  const stampBtn = document.getElementById('stampBtn');
+  stampBtn.classList.remove('thump');
+  void stampBtn.offsetWidth;
+  stampBtn.classList.add('thump');
+
+  const pool = buildPool();
+  if (pool.length < state.count) return;
+
+  const template = state.templates[state.activeTmpl] || DEFAULT_TEMPLATES[0];
+  const newResults = [];
+  let tries = 0;
+  while (newResults.length < 10 && tries < 400) {
+    tries++;
+    const combo = pickCombo(pool);
+    const key = combo.slice().sort().join('|');
+    if (usedCombos.has(key) && usedCombos.size < pool.length * 3) {
+      continue;
+    }
+    usedCombos.add(key);
+    if (usedCombos.size > 300) {
+      usedCombos = new Set(Array.from(usedCombos).slice(-150));
+    }
+    const motifText = combo.join(' × ');
+    const prompt = template.replace('{motifs}', motifText);
+    newResults.push({ motifText, prompt });
+  }
+  results = newResults;
+  renderResults();
+  document.getElementById('rerollBtn').disabled = false;
+  document.getElementById('copyAllRow').style.display = results.length ? 'flex' : 'none';
+}
+
+function renderResults() {
+  const el = document.getElementById('results');
+  const empty = document.getElementById('emptyMsg');
+  if (!results.length) {
+    el.innerHTML = '';
+    el.appendChild(empty);
+    return;
+  }
+  el.innerHTML = '';
+  results.forEach((r, i) => {
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.innerHTML = `
+      <div class="num">${KANJI_NUM[i] || (i+1)}</div>
+      <div class="motifs">${escapeHtml(r.motifText)}</div>
+      <button class="copybtn" data-idx="${i}">コピー</button>
+    `;
+    el.appendChild(card);
+  });
+  el.querySelectorAll('.copybtn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const idx = parseInt(btn.getAttribute('data-idx'), 10);
+      copyText(results[idx].prompt, btn);
+    });
+  });
+}
+
+function escapeHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function copyText(text, btnEl) {
+  const done = () => {
+    if (btnEl) {
+      const orig = btnEl.textContent;
+      btnEl.textContent = 'コピー済';
+      btnEl.classList.add('copied');
+      setTimeout(() => { btnEl.textContent = orig; btnEl.classList.remove('copied'); }, 1400);
+    }
+  };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(done).catch(() => fallbackCopy(text, done));
+  } else {
+    fallbackCopy(text, done);
+  }
+}
+
+function fallbackCopy(text, cb) {
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.position = 'fixed';
+  ta.style.opacity = '0';
+  document.body.appendChild(ta);
+  ta.select();
+  try { document.execCommand('copy'); } catch (e) {}
+  document.body.removeChild(ta);
+  if (cb) cb();
+}
+
+function copyAll() {
+  const all = results.map((r, i) => `${i+1}. ${r.prompt}`).join('\n\n');
+  const btn = document.querySelector('#copyAllRow button');
+  copyText(all, btn);
+}
+
+function init() {
+  loadState();
+  renderGenreChips();
+  renderCountRow();
+  renderTemplates();
+}
+init();
+</script>
+</body>
+</html>
