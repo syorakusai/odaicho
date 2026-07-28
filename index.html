@@ -470,15 +470,27 @@ let usedCombos = new Set();
 let results = [];
 
 const STORAGE_KEY = 'odaicho-state-v2';
+const RESULTS_STORAGE_KEY = 'odaicho-results-v1';
 
 function loadState() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) {
       const saved = JSON.parse(raw);
-      state = Object.assign(state, saved);
-      state.genres = state.genres.filter(g => GENRES[g]);
-      if (state.genres.length === 0) state.genres = Object.keys(GENRES);
+      if (!saved || typeof saved !== 'object' || Array.isArray(saved)) return;
+
+      if (Array.isArray(saved.genres)) {
+        const genres = saved.genres.filter(g => typeof g === 'string' && GENRES[g]);
+        if (genres.length) state.genres = [...new Set(genres)];
+      }
+      if ([1, 2, 3].includes(saved.count)) state.count = saved.count;
+      if (Array.isArray(saved.templates)) {
+        const templates = saved.templates.filter(t => typeof t === 'string' && t.trim());
+        if (templates.length) state.templates = templates;
+      }
+      if (Number.isInteger(saved.activeTmpl) && saved.activeTmpl >= 0) {
+        state.activeTmpl = Math.min(saved.activeTmpl, state.templates.length - 1);
+      }
     }
   } catch (e) {}
 }
@@ -488,6 +500,36 @@ function saveState() {
   } catch (e) {
     console.error('保存に失敗しました', e);
   }
+}
+
+function loadResults() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(RESULTS_STORAGE_KEY));
+    if (!Array.isArray(saved) || saved.length !== 10) return;
+    const validResults = saved.every(result =>
+      result &&
+      typeof result === 'object' &&
+      typeof result.motifText === 'string' &&
+      result.motifText.length > 0 &&
+      typeof result.prompt === 'string' &&
+      result.prompt.length > 0
+    );
+    if (validResults) results = saved.map(({ motifText, prompt }) => ({ motifText, prompt }));
+  } catch (e) {}
+}
+
+function saveResults() {
+  try {
+    localStorage.setItem(RESULTS_STORAGE_KEY, JSON.stringify(results));
+  } catch (e) {
+    console.error('生成結果の保存に失敗しました', e);
+  }
+}
+
+function updateResultsUi() {
+  renderResults();
+  document.getElementById('rerollBtn').disabled = results.length !== 10;
+  document.getElementById('copyAllRow').style.display = results.length === 10 ? 'flex' : 'none';
 }
 
 function togglePanel(id) {
@@ -632,9 +674,8 @@ function generate() {
     newResults.push({ motifText, prompt });
   }
   results = newResults;
-  renderResults();
-  document.getElementById('rerollBtn').disabled = false;
-  document.getElementById('copyAllRow').style.display = results.length ? 'flex' : 'none';
+  saveResults();
+  updateResultsUi();
 }
 
 function renderResults() {
@@ -704,9 +745,11 @@ function copyAll() {
 
 function init() {
   loadState();
+  loadResults();
   renderGenreChips();
   renderCountRow();
   renderTemplates();
+  updateResultsUi();
 }
 init();
 if ('serviceWorker' in navigator) {
