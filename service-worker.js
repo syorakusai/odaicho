@@ -1,4 +1,4 @@
-const CACHE_NAME = 'odaicho-v2';
+const CACHE_NAME = 'odaicho-v3';
 const APP_SHELL = [
   './',
   './index.html',
