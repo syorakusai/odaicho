@@ -1,0 +1,20 @@
+{
+  "id": "./",
+  "name": "御題帳",
+  "short_name": "御題帳",
+  "description": "お題とデザインプロンプトをすばやくコピーするツール",
+  "lang": "ja",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#e8dfc8",
+  "theme_color": "#211c17",
+  "icons": [
+    {
+      "src": "./icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

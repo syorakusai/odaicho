@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title">
+  <title id="title">御題帳</title>
+  <rect width="512" height="512" fill="#e8dfc8"/>
+  <rect x="52" y="52" width="408" height="408" rx="72" fill="#211c17"/>
+  <rect x="148" y="118" width="216" height="276" rx="8" fill="#f4efdf"/>
+  <rect x="148" y="118" width="16" height="276" fill="#a6332e"/>
+  <path d="M205 184h154M205 240h154M205 296h118" fill="none" stroke="#211c17" stroke-linecap="round" stroke-width="14"/>
+</svg>
