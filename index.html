@@ -310,7 +310,7 @@
     line-height: 1.8;
   }
 
-  .footer-actions { display: flex; justify-content: center; margin-top: 16px; }
+  .footer-actions { display: flex; justify-content: center; gap: 10px; margin-top: 16px; }
   .footer-actions button {
     font-size: 12.5px;
     padding: 9px 18px;
@@ -318,6 +318,11 @@
     border: none;
     background: var(--ink);
     color: var(--paper-card);
+  }
+  .footer-actions .next-button {
+    border: 1.3px solid var(--ink);
+    background: transparent;
+    color: var(--ink);
   }
 </style>
 </head>
@@ -378,7 +383,8 @@
   </div>
 
   <div class="footer-actions" id="copyAllRow" style="display:none;">
-    <button onclick="copyAll()">10件まとめてコピー</button>
+    <button id="copyAllBtn" onclick="copyAll()">10件まとめてコピー</button>
+    <button class="next-button" onclick="generate()">次の10件を引く</button>
   </div>
 
 </div>
@@ -739,7 +745,7 @@ function fallbackCopy(text, cb) {
 
 function copyAll() {
   const all = results.map((r, i) => `${i+1}. ${r.prompt}`).join('\n\n');
-  const btn = document.querySelector('#copyAllRow button');
+  const btn = document.getElementById('copyAllBtn');
   copyText(all, btn);
 }
 
