@@ -352,6 +352,25 @@
 
       <div class="subhead">モチーフの個数</div>
       <div class="count-row" id="countRow"></div>
+
+      <div class="subhead">出力形式</div>
+      <div class="count-row" id="modeRow"></div>
+    </div>
+  </div>
+
+  <div class="panel" id="panel-prefix">
+    <div class="panel-head" onclick="togglePanel('panel-prefix')">
+      <span class="label">前半の文言</span>
+      <span class="chev">▾</span>
+    </div>
+    <div class="panel-body">
+      <div class="subhead">使う文言を選ぶ(タップで切替・×で削除)</div>
+      <div class="tmpl-list" id="prefixList"></div>
+      <div class="tmpl-add">
+        <div class="tmpl-hint">モチーフの前にそのまま付与されます</div>
+        <textarea id="newPrefix" placeholder="例）少しコミカルに。"></textarea>
+        <div style="margin-top:8px;"><button class="tmpl-add-btn" onclick="addPrefix()">+ 追加</button></div>
+      </div>
     </div>
   </div>
 
@@ -469,6 +488,9 @@ const DEFAULT_TEMPLATES = [
 let state = {
   genres: Object.keys(GENRES),
   count: 2,
+  mode: 'fusion',
+  prefixes: [''],
+  activePrefix: 0,
   templates: DEFAULT_TEMPLATES.slice(),
   activeTmpl: 0
 };
@@ -490,6 +512,14 @@ function loadState() {
         if (genres.length) state.genres = [...new Set(genres)];
       }
       if ([1, 2, 3].includes(saved.count)) state.count = saved.count;
+      if (['fusion', 'single'].includes(saved.mode)) state.mode = saved.mode;
+      if (Array.isArray(saved.prefixes)) {
+        const prefixes = saved.prefixes.filter(p => typeof p === 'string');
+        if (prefixes.length) state.prefixes = [...new Set(['', ...prefixes])];
+      }
+      if (Number.isInteger(saved.activePrefix) && saved.activePrefix >= 0) {
+        state.activePrefix = Math.min(saved.activePrefix, state.prefixes.length - 1);
+      }
       if (Array.isArray(saved.templates)) {
         const templates = saved.templates.filter(t => typeof t === 'string' && t.trim());
         if (templates.length) state.templates = templates;
@@ -590,6 +620,61 @@ function renderCountRow() {
   });
 }
 
+function renderModeRow() {
+  const el = document.getElementById('modeRow');
+  el.innerHTML = '';
+  [['fusion', '融合'], ['single', '単独']].forEach(([mode, label]) => {
+    const btn = document.createElement('button');
+    btn.className = 'count-btn' + (state.mode === mode ? ' on' : '');
+    btn.textContent = label;
+    btn.onclick = () => {
+      state.mode = mode;
+      renderModeRow();
+      saveState();
+    };
+    el.appendChild(btn);
+  });
+}
+
+function renderPrefixes() {
+  const el = document.getElementById('prefixList');
+  el.innerHTML = '';
+  state.prefixes.forEach((prefix, i) => {
+    const row = document.createElement('div');
+    row.className = 'tmpl-item' + (state.activePrefix === i ? ' on' : '');
+    const txt = document.createElement('div');
+    txt.className = 'txt';
+    txt.textContent = prefix || 'なし';
+    txt.onclick = () => { state.activePrefix = i; renderPrefixes(); saveState(); };
+    row.appendChild(txt);
+    if (prefix) {
+      const del = document.createElement('div');
+      del.className = 'del';
+      del.textContent = '×';
+      del.onclick = (ev) => {
+        ev.stopPropagation();
+        state.prefixes.splice(i, 1);
+        if (state.activePrefix >= state.prefixes.length) state.activePrefix = state.prefixes.length - 1;
+        renderPrefixes();
+        saveState();
+      };
+      row.appendChild(del);
+    }
+    el.appendChild(row);
+  });
+}
+
+function addPrefix() {
+  const ta = document.getElementById('newPrefix');
+  const val = ta.value.trim();
+  if (!val || state.prefixes.includes(val)) return;
+  state.prefixes.push(val);
+  state.activePrefix = state.prefixes.length - 1;
+  ta.value = '';
+  renderPrefixes();
+  saveState();
+}
+
 function renderTemplates() {
   const el = document.getElementById('tmplList');
   el.innerHTML = '';
@@ -649,7 +734,7 @@ function buildPool() {
 
 function pickCombo(pool) {
   const shuffledPool = shuffled(pool);
-  return shuffledPool.slice(0, state.count);
+  return shuffledPool.slice(0, state.mode === 'single' ? 1 : state.count);
 }
 
 function generate() {
@@ -662,6 +747,7 @@ function generate() {
   if (pool.length < state.count) return;
 
   const template = state.templates[state.activeTmpl] || DEFAULT_TEMPLATES[0];
+  const prefix = state.prefixes[state.activePrefix] || '';
   const newResults = [];
   let tries = 0;
   while (newResults.length < 10 && tries < 400) {
@@ -676,7 +762,7 @@ function generate() {
       usedCombos = new Set(Array.from(usedCombos).slice(-150));
     }
     const motifText = combo.join(' × ');
-    const prompt = template.replace('{motifs}', motifText);
+    const prompt = prefix + template.replace('{motifs}', motifText);
     newResults.push({ motifText, prompt });
   }
   results = newResults;
@@ -754,6 +840,8 @@ function init() {
   loadResults();
   renderGenreChips();
   renderCountRow();
+  renderModeRow();
+  renderPrefixes();
   renderTemplates();
   updateResultsUi();
 }
