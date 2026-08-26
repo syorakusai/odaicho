@@ -160,54 +160,60 @@
 
   /* Detail view */
   #detailView { display: none; padding-top: 14px; }
-  .detail-top {
-    display: flex; align-items: center; justify-content: space-between;
-    gap: 6px;
-    margin-bottom: 12px;
+  .detail-info {
+    text-align: center;
+    margin-bottom: 10px;
   }
-  .detail-top .back-btn {
+  .detail-info .no {
+    font-family: 'Yuji Syuku', serif;
+    font-size: 12px;
+    color: var(--gold);
+    margin-right: 6px;
+  }
+  .detail-info .name {
+    font-family: 'Shippori Mincho', serif;
+    font-weight: 700;
+    font-size: 16px;
+  }
+  .detail-info .postdate {
+    font-size: 11.5px;
+    color: var(--ink-faint);
+    margin-left: 8px;
+  }
+  .detail-nav-row {
+    display: grid;
+    grid-template-columns: 1fr auto auto auto;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 14px;
+  }
+  .detail-nav-row .back-btn {
     font-size: 12.5px;
     padding: 8px 12px;
     border-radius: 20px;
     border: 1.3px solid var(--line);
     background: transparent;
     color: var(--ink-soft);
-    flex-shrink: 0;
   }
-  .detail-center {
-    display: flex; align-items: center; justify-content: center;
-    gap: 8px;
-    flex: 1;
-    min-width: 0;
-  }
-  .detail-center button {
+  .detail-nav-row button.round {
     font-size: 14px;
     width: 32px; height: 32px;
     border-radius: 50%;
     border: 1.3px solid var(--ink);
     background: transparent;
     color: var(--ink);
-    flex-shrink: 0;
     padding: 0;
   }
-  .detail-center button:disabled { opacity: 0.3; }
-  .detail-center .name-block {
-    text-align: center;
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-  .detail-center .name-block .no {
-    font-family: 'Yuji Syuku', serif;
-    font-size: 11.5px;
-    color: var(--gold);
-    margin-right: 6px;
-  }
-  .detail-center .name-block .name {
-    font-family: 'Shippori Mincho', serif;
+  .detail-nav-row button.round:disabled { opacity: 0.3; }
+  .detail-nav-row .today-btn {
+    font-size: 12.5px;
+    padding: 8px 12px;
+    border-radius: 20px;
+    border: 1.3px solid var(--seal);
+    background: var(--seal);
+    color: #F4EFDF;
     font-weight: 700;
-    font-size: 16px;
+    white-space: nowrap;
   }
 
   .block { margin-bottom: 16px; }
@@ -278,15 +284,14 @@
 
   <!-- DETAIL VIEW -->
   <div id="detailView">
-    <div class="detail-top">
+    <div class="detail-info">
+      <span class="no" id="dNo"></span><span class="name" id="dName"></span><span class="postdate" id="dPostDate"></span>
+    </div>
+    <div class="detail-nav-row">
       <button class="back-btn" onclick="showList({clearFilter:true})">‹ 一覧へ</button>
-      <div class="detail-center">
-        <button id="prevBtn" onclick="stepDetail(-1)">←</button>
-        <div class="name-block">
-          <span class="no" id="dNo"></span><span class="name" id="dName"></span>
-        </div>
-        <button id="nextBtn" onclick="stepDetail(1)">→</button>
-      </div>
+      <button class="round" id="prevBtn" onclick="stepDetail(-1)">←</button>
+      <button class="round" id="nextBtn" onclick="stepDetail(1)">→</button>
+      <button class="today-btn" onclick="jumpToday()">今日</button>
     </div>
 
     <div class="block">
@@ -388,6 +393,7 @@ function showDetail(no) {
   document.getElementById('detailView').style.display = 'block';
   document.getElementById('dNo').textContent = 'No.' + item.no;
   document.getElementById('dName').textContent = item.name;
+  document.getElementById('dPostDate').textContent = item.postDate && item.postDate !== '-' ? '投稿日 ' + item.postDate : '';
   document.getElementById('dF').textContent = item.f;
   document.getElementById('dRBefore').textContent = item.rBefore;
   document.getElementById('dRAfter').textContent = item.rAfter;
