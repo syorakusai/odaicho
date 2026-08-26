@@ -34,7 +34,7 @@
       radial-gradient(circle at 20% 10%, rgba(140,122,78,0.07), transparent 40%),
       radial-gradient(circle at 90% 80%, rgba(140,122,78,0.06), transparent 45%);
   }
-  .wrap { max-width: 560px; margin: 0 auto; padding: 18px 16px calc(100px + env(safe-area-inset-bottom)); }
+  .wrap { max-width: 560px; margin: 0 auto; padding: 0 16px calc(100px + env(safe-area-inset-bottom)); }
 
   .app-nav {
     position: fixed;
@@ -67,7 +67,16 @@
     color: var(--paper-card);
   }
 
-  header.title { text-align: center; padding: 22px 0 14px; }
+  /* Sticky header for list view (title + search + today) */
+  .list-sticky {
+    position: sticky;
+    top: 0;
+    z-index: 400;
+    background: var(--paper);
+    padding-top: 18px;
+  }
+
+  header.title { text-align: center; padding: 4px 0 14px; }
   header.title h1 {
     font-family: 'Yuji Syuku', serif;
     font-size: 30px;
@@ -86,7 +95,7 @@
     margin: 12px auto 0; opacity: 0.6;
   }
 
-  .toolbar { display: flex; gap: 8px; margin-bottom: 14px; }
+  .toolbar { display: flex; gap: 8px; padding-bottom: 12px; }
   .toolbar button, .toolbar .search-box {
     font-size: 13px;
     padding: 9px 12px;
@@ -117,7 +126,7 @@
     white-space: nowrap;
   }
 
-  .list { display: flex; flex-direction: column; gap: 6px; }
+  .list { display: flex; flex-direction: column; gap: 6px; padding-top: 4px; }
   .list-row {
     display: flex; align-items: center; gap: 10px;
     padding: 11px 13px;
@@ -139,6 +148,7 @@
   }
   .list-row .arrow { color: var(--ink-faint); font-size: 13px; }
   .list-row.today-hit { border-color: var(--seal); background: rgba(166,51,46,0.06); }
+  .list-row.selected { border-color: var(--seal); background: rgba(166,51,46,0.12); box-shadow: 0 0 0 1px var(--seal); }
 
   .empty {
     text-align: center;
@@ -149,44 +159,58 @@
   }
 
   /* Detail view */
-  #detailView { display: none; }
-  .detail-nav {
+  #detailView { display: none; padding-top: 14px; }
+  .detail-top {
     display: flex; align-items: center; justify-content: space-between;
-    gap: 8px;
-    margin-bottom: 16px;
+    gap: 6px;
+    margin-bottom: 12px;
   }
-  .detail-nav button {
-    font-size: 13px;
-    padding: 9px 14px;
+  .detail-top .back-btn {
+    font-size: 12.5px;
+    padding: 8px 12px;
     border-radius: 20px;
+    border: 1.3px solid var(--line);
+    background: transparent;
+    color: var(--ink-soft);
+    flex-shrink: 0;
+  }
+  .detail-center {
+    display: flex; align-items: center; justify-content: center;
+    gap: 8px;
+    flex: 1;
+    min-width: 0;
+  }
+  .detail-center button {
+    font-size: 14px;
+    width: 32px; height: 32px;
+    border-radius: 50%;
     border: 1.3px solid var(--ink);
     background: transparent;
     color: var(--ink);
     flex-shrink: 0;
+    padding: 0;
   }
-  .detail-nav button:disabled { opacity: 0.3; }
-  .detail-nav .back-btn {
-    border-color: var(--line);
-    color: var(--ink-soft);
-  }
-  .detail-title {
+  .detail-center button:disabled { opacity: 0.3; }
+  .detail-center .name-block {
     text-align: center;
-    margin-bottom: 18px;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
-  .detail-title .no {
+  .detail-center .name-block .no {
     font-family: 'Yuji Syuku', serif;
-    font-size: 13px;
+    font-size: 11.5px;
     color: var(--gold);
-    display: block;
-    margin-bottom: 4px;
+    margin-right: 6px;
   }
-  .detail-title .name {
+  .detail-center .name-block .name {
     font-family: 'Shippori Mincho', serif;
     font-weight: 700;
-    font-size: 20px;
+    font-size: 16px;
   }
 
-  .block { margin-bottom: 18px; }
+  .block { margin-bottom: 16px; }
   .block-label {
     font-family: 'Shippori Mincho', serif;
     font-size: 13px;
@@ -209,22 +233,22 @@
     font-family: 'Zen Kaku Gothic New', sans-serif;
     font-size: 13px;
     line-height: 1.7;
-    padding: 14px 44px 14px 14px;
+    padding: 14px 14px 44px 14px;
     border-radius: 4px;
     white-space: pre-wrap;
     word-break: break-word;
-    max-height: 340px;
+    height: 180px;
     overflow-y: auto;
   }
   .copy-btn {
     position: absolute;
-    top: 8px; right: 8px;
-    background: rgba(244,239,223,0.12);
+    bottom: 10px; right: 10px;
+    background: rgba(244,239,223,0.15);
     color: #F4EFDF;
-    border: 1px solid rgba(244,239,223,0.3);
-    border-radius: 3px;
-    font-size: 11px;
-    padding: 5px 9px;
+    border: 1px solid rgba(244,239,223,0.35);
+    border-radius: 16px;
+    font-size: 12px;
+    padding: 8px 16px;
     font-family: 'Zen Kaku Gothic New', sans-serif;
   }
   .copy-btn.copied { background: var(--seal); border-color: var(--seal); }
@@ -233,19 +257,20 @@
 <body>
 <div class="wrap">
 
-  <header class="title">
-    <h1>妖怪物語</h1>
-    <p>番号から本文を呼び出す</p>
-    <div class="rule"></div>
-  </header>
-
   <!-- LIST VIEW -->
   <div id="listView">
-    <div class="toolbar">
-      <div class="search-box">
-        <input id="jumpInput" type="text" inputmode="numeric" placeholder="番号を入力してジャンプ">
+    <div class="list-sticky">
+      <header class="title">
+        <h1>妖怪物語</h1>
+        <p>番号から本文を呼び出す</p>
+        <div class="rule"></div>
+      </header>
+      <div class="toolbar">
+        <div class="search-box">
+          <input id="jumpInput" type="text" inputmode="numeric" placeholder="番号を入力してジャンプ">
+        </div>
+        <button class="today-btn" onclick="jumpToday()">今日</button>
       </div>
-      <button class="today-btn" onclick="jumpToday()">今日</button>
     </div>
     <div class="list" id="listEl"></div>
     <div class="empty" id="listEmpty" style="display:none;">該当する妖怪が見つかりません</div>
@@ -253,16 +278,15 @@
 
   <!-- DETAIL VIEW -->
   <div id="detailView">
-    <div class="detail-nav">
-      <button class="back-btn" onclick="showList()">一覧へ</button>
-      <div style="display:flex; gap:8px;">
+    <div class="detail-top">
+      <button class="back-btn" onclick="showList({clearFilter:true})">‹ 一覧へ</button>
+      <div class="detail-center">
         <button id="prevBtn" onclick="stepDetail(-1)">←</button>
+        <div class="name-block">
+          <span class="no" id="dNo"></span><span class="name" id="dName"></span>
+        </div>
         <button id="nextBtn" onclick="stepDetail(1)">→</button>
       </div>
-    </div>
-    <div class="detail-title">
-      <span class="no" id="dNo"></span>
-      <span class="name" id="dName"></span>
     </div>
 
     <div class="block">
@@ -303,6 +327,7 @@ YOKAI_DATA.forEach(d => { byNo[d.no] = d; });
 const sortedNos = YOKAI_DATA.map(d => d.no).sort((a,b) => a - b);
 
 const STORAGE_KEY = 'odaicho-story-last';
+let currentNo = null;
 
 function todayKey() {
   const now = new Date();
@@ -323,6 +348,7 @@ function renderList(filterText) {
     shown++;
     const row = document.createElement('div');
     row.className = 'list-row' + (d.postDate === today ? ' today-hit' : '');
+    row.setAttribute('data-no', d.no);
     row.innerHTML = `
       <div class="no">No.${d.no}</div>
       <div class="name">${escapeHtml(d.name)}</div>
@@ -338,15 +364,25 @@ function escapeHtml(s) {
   return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
-function showList() {
+function showList(opts) {
+  opts = opts || {};
+  if (opts.clearFilter) document.getElementById('jumpInput').value = '';
   document.getElementById('listView').style.display = 'block';
   document.getElementById('detailView').style.display = 'none';
   renderList(document.getElementById('jumpInput').value.trim());
+  if (currentNo !== null) {
+    const row = document.querySelector('.list-row[data-no="' + currentNo + '"]');
+    if (row) {
+      row.classList.add('selected');
+      row.scrollIntoView({ block: 'center' });
+    }
+  }
 }
 
 function showDetail(no) {
   const item = byNo[no];
   if (!item) return;
+  currentNo = no;
   localStorage.setItem(STORAGE_KEY, String(no));
   document.getElementById('listView').style.display = 'none';
   document.getElementById('detailView').style.display = 'block';
@@ -363,7 +399,6 @@ function showDetail(no) {
 }
 
 function stepDetail(dir) {
-  const currentNo = parseInt(document.getElementById('dNo').textContent.replace('No.', ''), 10);
   const idx = sortedNos.indexOf(currentNo);
   const newIdx = idx + dir;
   if (newIdx < 0 || newIdx >= sortedNos.length) return;
