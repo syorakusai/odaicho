@@ -247,37 +247,35 @@
     border-radius: 6px;
     background: var(--paper-card);
     padding: 9px;
+    gap: 8px;
   }
-  .quad-image .block-label { justify-content: flex-start; }
-  .quad-image .block-label .icon-btn {
-    width: 24px; height: 24px;
-    border-radius: 50%;
+  .img-actions-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .img-actions-stack button {
+    width: 100%;
+    font-size: 11.5px;
+    padding: 8px 6px;
+    border-radius: 16px;
     border: 1.3px solid var(--ink);
     background: transparent;
     color: var(--ink);
-    font-size: 12px;
-    padding: 0;
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
-    line-height: 1;
   }
-  .quad-image .block-label .icon-btn#shareBtn {
+  .img-actions-stack button#shareBtn {
     background: var(--ink);
     color: var(--paper-card);
   }
-  .quad-image .block-label .icon-btn:disabled {
+  .img-actions-stack button:disabled {
     opacity: 0.35;
   }
   .img-body {
     display: flex;
-    flex: 1;
-    align-items: center;
-    justify-content: center;
   }
   .thumb-wrap {
-    width: 84px;
-    height: 84px;
-    flex-shrink: 0;
+    width: 100%;
+    aspect-ratio: 1 / 1;
     border: 1px solid var(--line);
     border-radius: 5px;
     background: #fff;
@@ -371,10 +369,10 @@
 
     <div class="detail-grid">
       <div class="quad quad-image">
-        <div class="block-label">
-          画像
-          <button id="pickFolderBtn" class="icon-btn" type="button" title="フォルダ選択">📁</button>
-          <button id="shareBtn" class="icon-btn" type="button" title="共有" disabled>📤</button>
+        <div class="block-label">画像</div>
+        <div class="img-actions-stack">
+          <button id="pickFolderBtn" type="button">フォルダ選択</button>
+          <button id="shareBtn" type="button" disabled>共有</button>
         </div>
         <div class="img-body">
           <div class="thumb-wrap" id="thumbWrap">
