@@ -216,6 +216,53 @@
     white-space: nowrap;
   }
 
+  .image-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .thumb-wrap {
+    width: 64px; height: 64px;
+    flex-shrink: 0;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: var(--paper-card);
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+  }
+  .thumb-wrap img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+  }
+  .thumb-empty {
+    font-size: 9.5px;
+    color: var(--ink-faint);
+    text-align: center;
+    line-height: 1.4;
+    padding: 4px;
+  }
+  .image-actions {
+    display: flex;
+    gap: 8px;
+    flex: 1;
+  }
+  .image-actions button {
+    font-size: 12.5px;
+    padding: 9px 12px;
+    border-radius: 20px;
+    border: 1.3px solid var(--ink);
+    background: transparent;
+    color: var(--ink);
+    flex: 1;
+  }
+  .image-actions button#shareBtn {
+    background: var(--ink);
+    color: var(--paper-card);
+  }
+  .image-actions button:disabled {
+    opacity: 0.35;
+  }
+
   .block { margin-bottom: 16px; }
   .block-label {
     font-family: 'Shippori Mincho', serif;
@@ -293,6 +340,21 @@
       <button class="round" id="nextBtn" onclick="stepDetail(1)">→</button>
       <button class="today-btn" onclick="jumpToday()">今日</button>
     </div>
+
+    <div class="block">
+      <div class="block-label">画像</div>
+      <div class="image-row">
+        <div class="thumb-wrap" id="thumbWrap">
+          <div class="thumb-empty" id="thumbEmpty">フォルダ未選択</div>
+          <img id="thumbImg" style="display:none" alt="">
+        </div>
+        <div class="image-actions">
+          <button id="pickFolderBtn" type="button">フォルダ選択</button>
+          <button id="shareBtn" type="button" disabled>共有</button>
+        </div>
+      </div>
+    </div>
+    <input type="file" id="folderInput" webkitdirectory multiple style="display:none">
 
     <div class="block">
       <div class="block-label">F列（結合）</div>
@@ -402,6 +464,7 @@ function showDetail(no) {
   document.getElementById('prevBtn').disabled = idx <= 0;
   document.getElementById('nextBtn').disabled = idx >= sortedNos.length - 1;
   window.scrollTo(0, 0);
+  updateImageForCurrent();
 }
 
 function stepDetail(dir) {
@@ -441,6 +504,65 @@ document.getElementById('jumpInput').addEventListener('input', () => {
 document.getElementById('jumpInput').addEventListener('keydown', (e) => {
   if (e.key === 'Enter') jumpToInput();
 });
+
+let imageMap = {};
+let lastObjectUrl = null;
+let folderPicked = false;
+
+document.getElementById('pickFolderBtn').addEventListener('click', () => {
+  document.getElementById('folderInput').click();
+});
+
+document.getElementById('folderInput').addEventListener('change', (e) => {
+  imageMap = {};
+  folderPicked = true;
+  const files = Array.from(e.target.files);
+  files.forEach(f => {
+    const m = f.name.match(/^(\d+)/);
+    if (m) {
+      const no = parseInt(m[1], 10);
+      imageMap[no] = f;
+    }
+  });
+  updateImageForCurrent();
+});
+
+function updateImageForCurrent() {
+  const img = document.getElementById('thumbImg');
+  const empty = document.getElementById('thumbEmpty');
+  const shareBtn = document.getElementById('shareBtn');
+  if (!img) return;
+  const file = imageMap[currentNo];
+  if (lastObjectUrl) {
+    URL.revokeObjectURL(lastObjectUrl);
+    lastObjectUrl = null;
+  }
+  if (file) {
+    const url = URL.createObjectURL(file);
+    lastObjectUrl = url;
+    img.src = url;
+    img.style.display = 'block';
+    empty.style.display = 'none';
+    shareBtn.disabled = false;
+    shareBtn.onclick = async () => {
+      try {
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          await navigator.share({ files: [file] });
+        } else {
+          alert('この端末では画像の共有に対応していません');
+        }
+      } catch (err) {
+        // ユーザーが共有をキャンセルした場合は何もしない
+      }
+    };
+  } else {
+    img.style.display = 'none';
+    empty.style.display = 'block';
+    empty.textContent = folderPicked ? 'この番号の画像なし' : 'フォルダ未選択';
+    shareBtn.disabled = true;
+    shareBtn.onclick = null;
+  }
+}
 
 document.querySelectorAll('.copy-btn').forEach(btn => {
   btn.addEventListener('click', async () => {
