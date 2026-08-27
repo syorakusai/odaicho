@@ -308,10 +308,18 @@
     border-radius: 4px;
     white-space: pre-wrap;
     word-break: break-word;
-    height: 100%;
-    min-height: 190px;
+    height: 260px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(244,239,223,0.4) transparent;
     box-sizing: border-box;
     overflow-y: auto;
+  }
+  .quad pre::-webkit-scrollbar {
+    width: 5px;
+  }
+  .quad pre::-webkit-scrollbar-thumb {
+    background: rgba(244,239,223,0.4);
+    border-radius: 3px;
   }
   .copy-btn {
     position: absolute;
