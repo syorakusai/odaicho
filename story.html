@@ -216,17 +216,50 @@
     white-space: nowrap;
   }
 
-  .image-row {
-    display: flex;
-    align-items: center;
-    gap: 12px;
+  .detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
   }
-  .thumb-wrap {
-    width: 64px; height: 64px;
+  .quad {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+  .quad .block-label {
+    font-family: 'Shippori Mincho', serif;
+    font-size: 10.5px;
+    font-weight: 700;
+    color: var(--ink-soft);
+    display: flex; align-items: center; gap: 5px;
+    margin-bottom: 6px;
+  }
+  .quad .block-label::before {
+    content: '';
+    width: 9px; height: 1px;
+    background: var(--seal);
+    display: inline-block;
     flex-shrink: 0;
+  }
+
+  .quad-image {
     border: 1px solid var(--line);
     border-radius: 6px;
     background: var(--paper-card);
+    padding: 9px;
+  }
+  .img-body {
+    display: flex;
+    gap: 8px;
+    flex: 1;
+    align-items: stretch;
+  }
+  .thumb-wrap {
+    width: 56px;
+    flex-shrink: 0;
+    border: 1px solid var(--line);
+    border-radius: 5px;
+    background: #fff;
     display: flex; align-items: center; justify-content: center;
     overflow: hidden;
   }
@@ -235,73 +268,61 @@
     object-fit: cover;
   }
   .thumb-empty {
-    font-size: 9.5px;
+    font-size: 8.5px;
     color: var(--ink-faint);
     text-align: center;
-    line-height: 1.4;
-    padding: 4px;
+    line-height: 1.35;
+    padding: 3px;
   }
-  .image-actions {
+  .image-actions-col {
     display: flex;
-    gap: 8px;
+    flex-direction: column;
+    gap: 6px;
     flex: 1;
+    justify-content: center;
   }
-  .image-actions button {
-    font-size: 12.5px;
-    padding: 9px 12px;
-    border-radius: 20px;
+  .image-actions-col button {
+    font-size: 10.5px;
+    padding: 7px 6px;
+    border-radius: 14px;
     border: 1.3px solid var(--ink);
     background: transparent;
     color: var(--ink);
-    flex: 1;
   }
-  .image-actions button#shareBtn {
+  .image-actions-col button#shareBtn {
     background: var(--ink);
     color: var(--paper-card);
   }
-  .image-actions button:disabled {
+  .image-actions-col button:disabled {
     opacity: 0.35;
   }
 
-  .block { margin-bottom: 16px; }
-  .block-label {
-    font-family: 'Shippori Mincho', serif;
-    font-size: 13px;
-    font-weight: 700;
-    color: var(--ink-soft);
-    display: flex; align-items: center; gap: 8px;
-    margin-bottom: 8px;
-  }
-  .block-label::before {
-    content: '';
-    width: 14px; height: 1px;
-    background: var(--seal);
-    display: inline-block;
-  }
-  .code-wrap { position: relative; }
-  pre {
+  .code-wrap { position: relative; flex: 1; }
+  .quad pre {
     margin: 0;
     background: var(--ink);
     color: #F4EFDF;
     font-family: 'Zen Kaku Gothic New', sans-serif;
-    font-size: 13px;
-    line-height: 1.7;
-    padding: 14px 14px 44px 14px;
+    font-size: 11px;
+    line-height: 1.55;
+    padding: 32px 8px 8px 8px;
     border-radius: 4px;
     white-space: pre-wrap;
     word-break: break-word;
-    height: 180px;
+    height: 100%;
+    min-height: 190px;
+    box-sizing: border-box;
     overflow-y: auto;
   }
   .copy-btn {
     position: absolute;
-    bottom: 10px; right: 10px;
+    top: 6px; right: 6px;
     background: rgba(244,239,223,0.15);
     color: #F4EFDF;
     border: 1px solid rgba(244,239,223,0.35);
-    border-radius: 16px;
-    font-size: 12px;
-    padding: 8px 16px;
+    border-radius: 12px;
+    font-size: 10.5px;
+    padding: 5px 10px;
     font-family: 'Zen Kaku Gothic New', sans-serif;
   }
   .copy-btn.copied { background: var(--seal); border-color: var(--seal); }
@@ -341,42 +362,46 @@
       <button class="today-btn" onclick="jumpToday()">今日</button>
     </div>
 
-    <div class="block">
-      <div class="block-label">画像</div>
-      <div class="image-row">
-        <div class="thumb-wrap" id="thumbWrap">
-          <div class="thumb-empty" id="thumbEmpty">フォルダ未選択</div>
-          <img id="thumbImg" style="display:none" alt="">
+    <div class="detail-grid">
+      <div class="quad quad-image">
+        <div class="block-label">画像</div>
+        <div class="img-body">
+          <div class="thumb-wrap" id="thumbWrap">
+            <div class="thumb-empty" id="thumbEmpty">フォルダ未選択</div>
+            <img id="thumbImg" style="display:none" alt="">
+          </div>
+          <div class="image-actions-col">
+            <button id="pickFolderBtn" type="button">フォルダ選択</button>
+            <button id="shareBtn" type="button" disabled>共有</button>
+          </div>
         </div>
-        <div class="image-actions">
-          <button id="pickFolderBtn" type="button">フォルダ選択</button>
-          <button id="shareBtn" type="button" disabled>共有</button>
+      </div>
+
+      <div class="quad">
+        <div class="block-label">F列（結合）</div>
+        <div class="code-wrap">
+          <pre id="dF"></pre>
+          <button class="copy-btn" data-target="dF">コピー</button>
+        </div>
+      </div>
+
+      <div class="quad">
+        <div class="block-label">R列／【特質】まで</div>
+        <div class="code-wrap">
+          <pre id="dRBefore"></pre>
+          <button class="copy-btn" data-target="dRBefore">コピー</button>
+        </div>
+      </div>
+
+      <div class="quad">
+        <div class="block-label">R列／【特質】以降</div>
+        <div class="code-wrap">
+          <pre id="dRAfter"></pre>
+          <button class="copy-btn" data-target="dRAfter">コピー</button>
         </div>
       </div>
     </div>
     <input type="file" id="folderInput" webkitdirectory multiple style="display:none">
-
-    <div class="block">
-      <div class="block-label">F列（結合）</div>
-      <div class="code-wrap">
-        <pre id="dF"></pre>
-        <button class="copy-btn" data-target="dF">コピー</button>
-      </div>
-    </div>
-    <div class="block">
-      <div class="block-label">R列 ／ 【特質】まで</div>
-      <div class="code-wrap">
-        <pre id="dRBefore"></pre>
-        <button class="copy-btn" data-target="dRBefore">コピー</button>
-      </div>
-    </div>
-    <div class="block">
-      <div class="block-label">R列 ／ 【特質】以降</div>
-      <div class="code-wrap">
-        <pre id="dRAfter"></pre>
-        <button class="copy-btn" data-target="dRAfter">コピー</button>
-      </div>
-    </div>
   </div>
 
 </div>
