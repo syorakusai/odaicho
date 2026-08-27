@@ -371,12 +371,12 @@
       <div class="quad quad-image">
         <div class="block-label">画像</div>
         <div class="img-actions-stack">
-          <button id="pickImageBtn" type="button">画像を選ぶ</button>
+          <button id="pickFolderBtn" type="button">フォルダ選択</button>
           <button id="shareBtn" type="button" disabled>共有</button>
         </div>
         <div class="img-body">
           <div class="thumb-wrap" id="thumbWrap">
-            <div class="thumb-empty" id="thumbEmpty">画像<br>未選択</div>
+            <div class="thumb-empty" id="thumbEmpty">フォルダ<br>未選択</div>
             <img id="thumbImg" style="display:none" alt="">
           </div>
         </div>
@@ -406,7 +406,7 @@
         </div>
       </div>
     </div>
-    <input type="file" id="imageInput" accept="image/*" style="display:none">
+    <input type="file" id="folderInput" webkitdirectory multiple style="display:none">
   </div>
 
 </div>
@@ -494,7 +494,7 @@ function showDetail(no) {
   document.getElementById('prevBtn').disabled = idx <= 0;
   document.getElementById('nextBtn').disabled = idx >= sortedNos.length - 1;
   window.scrollTo(0, 0);
-  resetImageState();
+  updateImageForCurrent();
 }
 
 function stepDetail(dir) {
@@ -535,60 +535,63 @@ document.getElementById('jumpInput').addEventListener('keydown', (e) => {
   if (e.key === 'Enter') jumpToInput();
 });
 
+let imageMap = {};
 let lastObjectUrl = null;
+let folderPicked = false;
 
-document.getElementById('pickImageBtn').addEventListener('click', () => {
-  document.getElementById('imageInput').click();
+document.getElementById('pickFolderBtn').addEventListener('click', () => {
+  document.getElementById('folderInput').click();
 });
 
-document.getElementById('imageInput').addEventListener('change', (e) => {
-  const file = e.target.files[0];
-  if (file) showImage(file);
-  e.target.value = '';
-});
-
-function showImage(file) {
-  const img = document.getElementById('thumbImg');
-  const empty = document.getElementById('thumbEmpty');
-  const shareBtn = document.getElementById('shareBtn');
-  if (lastObjectUrl) {
-    URL.revokeObjectURL(lastObjectUrl);
-    lastObjectUrl = null;
-  }
-  const url = URL.createObjectURL(file);
-  lastObjectUrl = url;
-  img.src = url;
-  img.style.display = 'block';
-  empty.style.display = 'none';
-  shareBtn.disabled = false;
-  shareBtn.onclick = async () => {
-    try {
-      if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        await navigator.share({ files: [file] });
-      } else {
-        alert('この端末では画像の共有に対応していません');
-      }
-    } catch (err) {
-      // ユーザーが共有をキャンセルした場合は何もしない
+document.getElementById('folderInput').addEventListener('change', (e) => {
+  imageMap = {};
+  folderPicked = true;
+  const files = Array.from(e.target.files);
+  files.forEach(f => {
+    const m = f.name.match(/^(\d+)/);
+    if (m) {
+      const no = parseInt(m[1], 10);
+      imageMap[no] = f;
     }
-  };
-}
+  });
+  updateImageForCurrent();
+});
 
-function resetImageState() {
+function updateImageForCurrent() {
   const img = document.getElementById('thumbImg');
   const empty = document.getElementById('thumbEmpty');
   const shareBtn = document.getElementById('shareBtn');
   if (!img) return;
+  const file = imageMap[currentNo];
   if (lastObjectUrl) {
     URL.revokeObjectURL(lastObjectUrl);
     lastObjectUrl = null;
   }
-  img.style.display = 'none';
-  img.src = '';
-  empty.style.display = 'block';
-  empty.innerHTML = '画像<br>未選択';
-  shareBtn.disabled = true;
-  shareBtn.onclick = null;
+  if (file) {
+    const url = URL.createObjectURL(file);
+    lastObjectUrl = url;
+    img.src = url;
+    img.style.display = 'block';
+    empty.style.display = 'none';
+    shareBtn.disabled = false;
+    shareBtn.onclick = async () => {
+      try {
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          await navigator.share({ files: [file] });
+        } else {
+          alert('この端末では画像の共有に対応していません');
+        }
+      } catch (err) {
+        // ユーザーが共有をキャンセルした場合は何もしない
+      }
+    };
+  } else {
+    img.style.display = 'none';
+    empty.style.display = 'block';
+    empty.innerHTML = folderPicked ? 'この番号<br>画像なし' : 'フォルダ<br>未選択';
+    shareBtn.disabled = true;
+    shareBtn.onclick = null;
+  }
 }
 
 document.querySelectorAll('.copy-btn').forEach(btn => {
