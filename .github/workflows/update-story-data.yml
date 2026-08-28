@@ -1,0 +1,37 @@
+name: 妖怪物語データ更新
+
+on:
+  schedule:
+    # 毎日 04:00 JST (= 19:00 UTC 前日) に実行
+    - cron: '0 19 * * *'
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: リポジトリをチェックアウト
+        uses: actions/checkout@v4
+
+      - name: Python セットアップ
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: スプレッドシートを読み込みデータを更新
+        run: python3 scripts/update_data.py
+
+      - name: 変更があればコミット&push
+        run: |
+          if git diff --quiet -- data/yokai.json; then
+            echo "変更なし。スキップします。"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/yokai.json
+          git commit -m "妖怪物語データ自動更新 ($(date -u +'%Y-%m-%d %H:%M UTC'))"
+          git push
