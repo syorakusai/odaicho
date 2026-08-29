@@ -1,0 +1,20 @@
+{
+  "id": "./story.html",
+  "name": "妖怪物語",
+  "short_name": "妖怪物語",
+  "description": "妖怪の物語データを番号から呼び出してコピー・共有するツール",
+  "lang": "ja",
+  "start_url": "./story.html",
+  "scope": "./story.html",
+  "display": "standalone",
+  "background_color": "#e8dfc8",
+  "theme_color": "#211c17",
+  "icons": [
+    {
+      "src": "./icons/story-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
