@@ -14,10 +14,24 @@
   .app-nav a { display:flex; min-height:44px; align-items:center; justify-content:center; border:1px solid #c9bd9e; border-radius:6px; color:#5a5145; font-weight:bold; text-decoration:none; }
   .app-nav a[aria-current="page"] { border-color:#211c17; background:#211c17; color:#f4efdf; }
   h1 { font-size:18px; margin:0 0 14px; }
-  .card { background:#fff; border:1px solid #ddd; border-radius:6px; padding:12px; margin-bottom:12px; }
-  .style-name { font-weight:bold; font-size:15px; margin-bottom:8px; }
-  .btn-row { display:flex; gap:8px; }
-  button { flex:1; padding:8px 4px; font-size:12px; border-radius:16px; border:1px solid #888; background:#fafafa; }
+  .card {
+    background:#fff; border:1px solid #ddd; border-radius:6px;
+    padding:8px 10px; margin-bottom:8px;
+    display:flex; align-items:center; gap:8px;
+  }
+  .style-name {
+    flex:1; min-width:0;
+    font-weight:bold; font-size:14px;
+    white-space:nowrap; overflow-x:auto;
+    -webkit-overflow-scrolling:touch;
+    scrollbar-width:none;
+  }
+  .style-name::-webkit-scrollbar { display:none; }
+  .btn-row { display:flex; gap:6px; flex-shrink:0; }
+  button {
+    flex:none; width:34px; height:34px; padding:0;
+    font-size:12px; border-radius:50%; border:1px solid #888; background:#fafafa;
+  }
   button.copied { background:#2b6; color:#fff; border-color:#2b6; }
 </style>
 </head>
@@ -38,9 +52,9 @@ DATA.forEach((d, i) => {
   card.innerHTML = `
     <div class="style-name">${d.style}</div>
     <div class="btn-row">
-      <button data-idx="${i}" data-col="c5">03 新輪郭まま</button>
-      <button data-idx="${i}" data-col="c6">04 新輪郭破壊</button>
-      <button data-idx="${i}" data-col="c7">05 輪郭誇張</button>
+      <button data-idx="${i}" data-col="c5">03</button>
+      <button data-idx="${i}" data-col="c6">04</button>
+      <button data-idx="${i}" data-col="c7">05</button>
     </div>
   `;
   list.appendChild(card);
@@ -53,7 +67,7 @@ list.addEventListener('click', (e) => {
   const text = DATA[idx][col] || '';
   const done = () => {
     const orig = btn.textContent;
-    btn.textContent = 'コピーしました';
+    btn.textContent = '済';
     btn.classList.add('copied');
     setTimeout(() => { btn.textContent = orig; btn.classList.remove('copied'); }, 1200);
   };
