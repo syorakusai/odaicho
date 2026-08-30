@@ -352,9 +352,6 @@
 
       <div class="subhead">モチーフの個数</div>
       <div class="count-row" id="countRow"></div>
-
-      <div class="subhead">出力形式</div>
-      <div class="count-row" id="modeRow"></div>
     </div>
   </div>
 
@@ -493,7 +490,6 @@ const DEFAULT_TEMPLATES = [
 let state = {
   genres: Object.keys(GENRES),
   count: 2,
-  mode: 'fusion',
   prefixes: [''],
   activePrefix: 0,
   templates: DEFAULT_TEMPLATES.slice(),
@@ -517,7 +513,6 @@ function loadState() {
         if (genres.length) state.genres = [...new Set(genres)];
       }
       if ([1, 2, 3].includes(saved.count)) state.count = saved.count;
-      if (['fusion', 'single'].includes(saved.mode)) state.mode = saved.mode;
       if (Array.isArray(saved.prefixes)) {
         const prefixes = saved.prefixes.filter(p => typeof p === 'string');
         if (prefixes.length) state.prefixes = [...new Set(['', ...prefixes])];
@@ -627,22 +622,6 @@ function renderCountRow() {
   });
 }
 
-function renderModeRow() {
-  const el = document.getElementById('modeRow');
-  el.innerHTML = '';
-  [['fusion', '融合'], ['single', '単独']].forEach(([mode, label]) => {
-    const btn = document.createElement('button');
-    btn.className = 'count-btn' + (state.mode === mode ? ' on' : '');
-    btn.textContent = label;
-    btn.onclick = () => {
-      state.mode = mode;
-      renderModeRow();
-      saveState();
-    };
-    el.appendChild(btn);
-  });
-}
-
 function renderPrefixes() {
   const el = document.getElementById('prefixList');
   el.innerHTML = '';
@@ -741,7 +720,7 @@ function buildPool() {
 
 function pickCombo(pool) {
   const shuffledPool = shuffled(pool);
-  return shuffledPool.slice(0, state.mode === 'single' ? 1 : state.count);
+  return shuffledPool.slice(0, state.count);
 }
 
 function generate() {
@@ -859,7 +838,6 @@ function init() {
   loadResults();
   renderGenreChips();
   renderCountRow();
-  renderModeRow();
   renderPrefixes();
   renderTemplates();
   updateResultsUi();
