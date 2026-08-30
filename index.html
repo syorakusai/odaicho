@@ -476,6 +476,10 @@ const GENRES = {
   brand: {
     label: '企業・ブランド名',
     items: ['任天堂','ソニー','トヨタ','パナソニック','無印良品','ユニクロ','ポカリスエット','キューピー','カルビー','ロッテ','明治','江崎グリコ','資生堂','コクヨ','シャチハタ','ヤクルト','ブリヂストン','キッコーマン','カゴメ','サントリー']
+  },
+  dict: {
+    label: '辞書ランダム',
+    items: []
   }
 };
 
@@ -573,13 +577,15 @@ function togglePanel(id) {
   document.getElementById(id).classList.toggle('open');
 }
 
+let dictLoaded = false;
+
 function renderGenreChips() {
   const el = document.getElementById('genreChips');
   el.innerHTML = '';
   Object.keys(GENRES).forEach(key => {
     const btn = document.createElement('button');
     btn.className = 'chip' + (state.genres.includes(key) ? ' on' : '');
-    btn.textContent = GENRES[key].label;
+    btn.textContent = GENRES[key].label + (key === 'dict' && !dictLoaded ? '（読込中…）' : '');
     btn.onclick = () => {
       if (state.genres.includes(key)) {
         if (state.genres.length === 1) return;
@@ -836,6 +842,18 @@ function copyAll() {
   copyText(all, btn);
 }
 
+async function loadDictWords() {
+  try {
+    const res = await fetch('./data/dict-words.json', { cache: 'force-cache' });
+    const words = await res.json();
+    GENRES.dict.items = words;
+    dictLoaded = true;
+  } catch (e) {
+    console.error('辞書データの読み込みに失敗しました', e);
+  }
+  renderGenreChips();
+}
+
 function init() {
   loadState();
   loadResults();
@@ -845,6 +863,7 @@ function init() {
   renderPrefixes();
   renderTemplates();
   updateResultsUi();
+  loadDictWords();
 }
 init();
 if ('serviceWorker' in navigator) {
