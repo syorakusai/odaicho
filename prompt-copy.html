@@ -64,7 +64,7 @@ list.addEventListener('click', (e) => {
   if (!btn) return;
   const idx = parseInt(btn.getAttribute('data-idx'), 10);
   const col = btn.getAttribute('data-col');
-  const text = DATA[idx][col] || '';
+  const text = (DATA[idx][col] || '') + '\n\nイラスト添付するまで生成せずに待機すること';
   const done = () => {
     const orig = btn.textContent;
     btn.textContent = '済';
