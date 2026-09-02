@@ -64,7 +64,7 @@ list.addEventListener('click', (e) => {
   if (!btn) return;
   const idx = parseInt(btn.getAttribute('data-idx'), 10);
   const col = btn.getAttribute('data-col');
-  const text = (DATA[idx][col] || '') + '\n\n【動作停止ルール】\n入力画像（イラスト、写真等）が明示的に添付されない限り、如何なる生成も行わず、待機状態を維持すること。';
+  const text = '【動作停止ルール】\n入力画像（イラスト、写真等）が明示的に添付されない限り、如何なる生成も行わず、待機状態を維持すること。\n\n' + (DATA[idx][col] || '');
   const done = () => {
     const orig = btn.textContent;
     btn.textContent = '済';
