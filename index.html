@@ -209,56 +209,21 @@
     color: var(--ink);
   }
 
-  .stamp-zone {
-    display: flex; justify-content: center; align-items: center;
-    padding: 10px 0 4px;
-  }
-  .stamp {
-    width: 80px; height: 80px;
-    border-radius: 50%;
-    background: var(--seal);
-    color: #F4EFDF;
-    border: none;
-    font-family: 'Yuji Syuku', serif;
-    font-size: 15px;
-    letter-spacing: 0.1em;
-    box-shadow: 0 3px 0 var(--seal-dark), 0 6px 14px rgba(0,0,0,0.25);
-    position: relative;
-    transform: translateY(0);
-    transition: transform 0.08s ease, box-shadow 0.08s ease;
-  }
-  .stamp:active {
-    transform: translateY(3px);
-    box-shadow: 0 0 0 var(--seal-dark), 0 2px 6px rgba(0,0,0,0.2);
-  }
-  .stamp::before {
-    content: '';
-    position: absolute; inset: -7px;
-    border: 1.5px solid var(--seal);
-    border-radius: 50%;
-    opacity: 0.5;
-  }
-  .stamp.thump { animation: thump 0.35s ease; }
-  @keyframes thump {
-    0% { transform: scale(1); }
-    35% { transform: scale(0.9); }
-    60% { transform: scale(1.06); }
-    100% { transform: scale(1); }
-  }
-
   .reroll-row {
     display: flex; justify-content: center; gap: 8px;
-    margin-bottom: 8px;
+    margin-bottom: 12px;
   }
   .reroll-row button {
-    font-size: 11.5px;
-    padding: 6px 13px;
-    border-radius: 20px;
-    border: 1.3px solid var(--ink);
-    background: transparent;
-    color: var(--ink);
+    font-size: 14px;
+    font-weight: 700;
+    padding: 12px 32px;
+    border-radius: 24px;
+    border: none;
+    background: var(--seal);
+    color: #F4EFDF;
+    font-family: 'Shippori Mincho', serif;
   }
-  .reroll-row button:disabled { opacity: 0.35; }
+  .reroll-row button:active { background: var(--seal-dark); }
 
   .results { display: flex; flex-direction: column; gap: 5px; }
   .card {
@@ -387,15 +352,12 @@
     </div>
   </div>
 
-  <div class="stamp-zone">
-    <button class="stamp" id="stampBtn" onclick="generate()">御題を引く</button>
-  </div>
   <div class="reroll-row">
-    <button id="rerollBtn" onclick="generate()" disabled>次の10件を引く</button>
+    <button id="rerollBtn" onclick="generate()">次の10件を引く</button>
   </div>
 
   <div class="results" id="results">
-    <div class="empty" id="emptyMsg">ハンコを押すと、10件のお題が出てきます。</div>
+    <div class="empty" id="emptyMsg">「次の10件を引く」を押すと、10件のお題が出てきます。</div>
   </div>
 
   <div class="footer-actions" id="copyAllRow" style="display:none;">
@@ -564,7 +526,6 @@ function saveResults() {
 
 function updateResultsUi() {
   renderResults();
-  document.getElementById('rerollBtn').disabled = results.length !== 10;
   document.getElementById('copyAllRow').style.display = results.length === 10 ? 'flex' : 'none';
 }
 
@@ -724,11 +685,6 @@ function pickCombo(pool) {
 }
 
 function generate() {
-  const stampBtn = document.getElementById('stampBtn');
-  stampBtn.classList.remove('thump');
-  void stampBtn.offsetWidth;
-  stampBtn.classList.add('thump');
-
   const pool = buildPool();
   if (pool.length < state.count) return;
 
